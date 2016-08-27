@@ -1,0 +1,28 @@
+{
+  "name": "fluent-interface-builder",
+  "version": "1.0.0",
+  "description": "Provides functions for creating fluent interfaces easily.",
+  "main": "index.js",
+  "typings": "index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dangerozov/fluent-interface-builder.git"
+  },
+  "keywords": [
+    "fluent",
+    "interface",
+    "builder"
+  ],
+  "author": "Andrew Morozov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dangerozov/fluent-interface-builder/issues"
+  },
+  "homepage": "https://github.com/dangerozov/fluent-interface-builder#readme",
+  "devDependencies": {
+    "typescript": "^1.8.10"
+  }
+}
