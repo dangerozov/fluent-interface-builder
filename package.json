@@ -2,10 +2,10 @@
   "name": "fluent-interface-builder",
   "version": "1.0.0",
   "description": "Provides functions for creating fluent interfaces easily.",
-  "main": "dist/src/index.js",
+  "main": "dist/index.js",
   "files": [
-    "dist/src/index.js",
-    "dist/src/index.d.ts"
+    "dist/index.js",
+    "dist/index.d.ts"
   ],
   "scripts": {
     "build": "tsc",
