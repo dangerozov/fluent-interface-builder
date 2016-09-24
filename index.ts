@@ -2,7 +2,7 @@ export interface Builder<TWrapper, TObject> {
 	value: (context: TObject) => TWrapper,
 	cascade: (name: string, func: (...args: any[]) => (context: TObject) => void) => Builder<TWrapper, TObject>,
 	chain: <TNewObject>(name: string, func: (...args: any[]) => (context: TObject) => TNewObject) => Builder<TWrapper, TNewObject>,
-	unbox: (name: string, func: (...args: any[]) => (context: TObject) => any) => Builder<TWrapper, TObject>
+	unwrap: (name: string, func: (...args: any[]) => (context: TObject) => any) => Builder<TWrapper, TObject>
 };
 
 export let build = <TWrapper, TObject>() => {
@@ -31,7 +31,7 @@ export let build = <TWrapper, TObject>() => {
 			}
 			return result;
 		},
-		unbox: (name: string, func: <U>(...args: any[]) => (context: TObject) => U) => {
+		unwrap: (name: string, func: <U>(...args: any[]) => (context: TObject) => U) => {
 			prototype[name] = function(...args: any[]) {
 				return func(...args)((<Wrapper>this).value);
 			}
