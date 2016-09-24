@@ -9,6 +9,9 @@ Create fluent interfaces fluently.
 
 `builder` has single function `build`, that starts fluent interface. It has `cascade`, `chain` and `unwrap` for all your fluent needs and `value` to end fluent interface and get the result.
 
+They all follow the same interface `(name: string, func: (...args: any[]) => (context: T) => ...)`.
+Function `func` should be [partilly applied](https://en.wikipedia.org/wiki/Partial_application) to accept zero to many arguments and return another function that accept context. Context is an object hidden inside fluent interface.
+
 ### [cascade](https://en.wikipedia.org/wiki/Method_cascading)
 ```
 cascade(name: string, func: (...args: any[]) => (context: T) => void)
@@ -42,6 +45,7 @@ Use:
 - if you want your function to end fluent interface prematurely
 
 ## Examples
+### JavaScript
 Calculator
 ```
 let calculator = builder.build()
@@ -77,6 +81,29 @@ let localhost = url({ scheme: null, address: null, port: null })
   
 // localhost = 'http://127.0.0.1:80'
 ```
+### TypeScript
+`builder.build` has generic parameters `<TWrapper, TObject>`.
+`TWrapper` - type of your fluent interface. You need to provide it due to dynamically assigning functions to object via indexer.
+`TObject` - type of object, that will be passed around behind the scenes.
+
+```
+type Point = { x: number, y: number };
+type WrappedPoint = {
+  value: Point,
+  add: (point: Point) => WrappedPoint,
+  sub: (point: Point) => WrappedPoint,
+  mul: (point: Point) => WrappedPoint,
+  div: (point: Point) => WrappedPoint
+}
+
+let point = builder.build<WrappedPoint, Point>()
+  .chain("add", (b) => (a) => ({ x: a.x + b.x, y: a.y + b.y }))
+  .chain("sub", (b) => (a) => ({ x: a.x - b.x, y: a.y - b.y }))
+  .chain("mul", (b) => (a) => ({ x: a.x * b.x, y: a.y * b.y }))
+  .chain("div", (b) => (a) => ({ x: a.x / b.x, y: a.y / b.y }))
+  .value;
+```
+
 
 ## Notes
 
@@ -104,3 +131,27 @@ let result2 = partiallyBuilt2.value;
 `result1` and `result2` both get `foo`, `foo1` and `foo2` functions.
 
 This behavior may change in the future though.
+
+
+### Merge your static functions with fluent interface using object.assign
+If you have an object with all your static functions, that you've used to create fluent interface, you can merge them using object.assign.
+```
+let pointHelpers = {
+  add: (left, right) => ({ x: left.x + right.x, y: left.y + right.y });
+  sub: (left, right) => ({ x: left.x - right.x, y: left.y - right.y });
+  mul: (left, right) => ({ x: left.x * right.x, y: left.y * right.y });
+  div: (left, right) => ({ x: left.x / right.x, y: left.y / right.y });
+}
+
+let pointFluent = builder.build()
+  .chain("add", (right) => (left) => pointHelpers.add(left, right))
+  .chain("sub", (right) => (left) => pointHelpers.sub(left, right))
+  .chain("mul", (right) => (left) => pointHelpers.mul(left, right))
+  .chain("div", (right) => (left) => pointHelpers.div(left, right))
+  .value;
+
+let point = object.assign(pointFluent, pointHelpers);
+
+let p1 = point({ x: 2, y: 3 }).add({ x: 4, y: 5 }).div({ x: 2, y: 2 }).value; // { x: 3, y: 4 }
+let p2 = point.add({ x: 1, y: 2 }, { x: 3, y: 4 }); // { x: 4, y: 6 }
+```
