@@ -9,8 +9,8 @@ Create fluent interfaces fluently.
 
 `builder` has single function `build`, that starts fluent interface. It has `cascade`, `chain` and `unwrap` for all your fluent needs and `value` to end fluent interface and get the result.
 
-They all follow the same interface `(name: string, func: (...args: any[]) => (context: T) => ...)`.
-Function `func` should be [partilly applied](https://en.wikipedia.org/wiki/Partial_application) to accept zero to many arguments and return another function that accept context. Context is an object hidden inside fluent interface.
+All these functions follow the same interface `(name: string, func: (...args: any[]) => (context: T) => ...)`.
+Function `func` should be [partially applied](https://en.wikipedia.org/wiki/Partial_application) to accept zero to many arguments and return another function that accept context. Context is an object hidden inside fluent interface.
 
 ### [cascade](https://en.wikipedia.org/wiki/Method_cascading)
 ```
