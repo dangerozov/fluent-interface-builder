@@ -3,7 +3,9 @@
 		"module": "commonjs",
 		"noImplicitAny": true,
 		"declaration": true,
-		"target": "es5",
-		"outDir": "dist"
-	}
+		"target": "es5"
+	},
+	"exclude": [
+		"node_modules/"
+	]
 }
