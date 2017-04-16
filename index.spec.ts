@@ -5,21 +5,21 @@ describe('Builder', () => {
         url: (value: string) => OptionsBuilder
         reset: (newOpts: Options) => OptionsBuilder
         toString: () => string
-        value: any
+        value: Options
     }
 
     interface Options {
         url: string
     }
 
-    let createOpts = builder.build<OptionsBuilder, Options>()
+    let createOpts = builder.build<Options, OptionsBuilder>()
         .cascade('url', (value) => (opts) => { opts.url = value; })
         .chain('reset', (newOpts) => (opts) => newOpts)
         .unwrap('toString', () => (opts) => `{ url: ${opts.url} }`)
         .value;
 
     it('should cascade', () => {
-        let opts = createOpts({ url: null })
+        let opts = new createOpts({ url: null })
             .url('http://localhost/')
             .value;
 
@@ -29,7 +29,7 @@ describe('Builder', () => {
     it('should chain', () => {
         let oldOpts = { url: 'http://localhost/' };
         let newOpts = { url: 'http://127.0.0.1/' };
-        let opts = createOpts(oldOpts)
+        let opts = new createOpts(oldOpts)
             .reset(newOpts)
             .value;
 
@@ -37,9 +37,27 @@ describe('Builder', () => {
     });
 
     it('should unwrap', () => {
-        let opts = createOpts({ url: 'http://localhost/' })
+        let opts = new createOpts({ url: 'http://localhost/' })
             .toString();
 
         expect(opts).toBe('{ url: http://localhost/ }');
+    });
+
+    interface ICalc {
+        value: number,
+        add: (b: number) => ICalc;
+        sub: (b: number) => ICalc;
+        unwrap: () => number;
+    }
+
+    let Calc = builder.build<number, ICalc>()
+        .chain("add", (b) => (a) => a + b)
+        .chain("sub", (b) => (a) => a - b)
+        .value;
+
+    it('should calc', () => {
+        let result = new Calc(5).add(6).sub(7).value;
+
+        expect(result).toBe(5 + 6 - 7);
     });
 });
