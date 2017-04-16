@@ -9,7 +9,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "jasmine JASMINE_CONFIG_PATH=jasmine.json"
+    "test": "jasmine JASMINE_CONFIG_PATH=jasmine.json",
+    "install": "typings install"
   },
   "repository": {
     "type": "git",
@@ -27,8 +28,8 @@
   },
   "homepage": "https://github.com/dangerozov/fluent-interface-builder#readme",
   "devDependencies": {
-    "jasmine": "^2.5.2",
-    "typescript": "^2.0.7",
-    "typings": "^1.5.0"
+    "jasmine": "^2.5.3",
+    "typescript": "^2.2.2",
+    "typings": "^2.1.1"
   }
 }
