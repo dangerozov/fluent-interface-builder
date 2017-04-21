@@ -5,9 +5,9 @@ Create fluent interfaces fluently.
 
 ## Usage
 
-`var builder = require('fluent-interface-builder');`
+`let fib = require('fluent-interface-builder');`
 
-`builder` has single function `build`, that starts fluent interface. It has `cascade`, `chain` and `unwrap` for all your fluent needs and `value` to end fluent interface and get the result.
+`fib` has constructor `Builder`, that starts fluent interface. It has `cascade`, `chain` and `unwrap` that add provided functions to inner constructor prototype and `value` to return this inner constructor as result.
 
 All these functions follow the same interface `(name: string, func: (...args: any[]) => (context: T) => ...)`.
 Function `func` should be [partially applied](https://en.wikipedia.org/wiki/Partial_application) to accept zero to many arguments and return another function that accept context. Context is an object hidden inside fluent interface.
@@ -48,14 +48,14 @@ Use:
 ### JavaScript
 Calculator
 ```
-let calculator = builder.build()
+let Calculator = new fib.Builder()
   .chain('add', (b) => (a) => a + b)
   .chain('sub', (b) => (a) => a - b)
   .chain('mul', (b) => (a) => a * b)
   .chain('div', (b) => (a) => a / b)
   .value;
   
-let result = calculator(10)
+let result = new Calculator(10)
   .add(4)
   .div(2)
   .sub(3)
@@ -66,14 +66,14 @@ let result = calculator(10)
 ```
 Url builder
 ```
-let url = builder.build()
-  .cascade('scheme', (scheme) => (opts) => { opts.scheme = scheme; })
-  .cascade('address', (address) => (opts) => { opts.address = address; })
-  .cascade('port', (port) => (opts) => { opts.port = port; }
-  .unwrap('toUrl', () => (opts) => { return opts.scheme + '://' + opts.address + ':' opts.port; })
+let Url = new fib.Builder()
+  .cascade('scheme', (scheme) => (url) => { url.scheme = scheme; })
+  .cascade('address', (address) => (url) => { url.address = address; })
+  .cascade('port', (port) => (url) => { url.port = port; }
+  .unwrap('toUrl', () => (url) => { return url.scheme + '://' + url.address + ':' url.port; })
   .value;
   
-let localhost = url({ scheme: null, address: null, port: null })
+let localhost = new Url({ scheme: null, address: null, port: null })
   .scheme('http')
   .address('127.0.0.1')
   .port('80')
@@ -82,9 +82,9 @@ let localhost = url({ scheme: null, address: null, port: null })
 // localhost = 'http://127.0.0.1:80'
 ```
 ### TypeScript
-`builder.build` has generic parameters `<TWrapper, TObject>`.
-`TWrapper` - type of your fluent interface. You need to provide it due to dynamically assigning functions to object via indexer.
-`TObject` - type of object, that will be passed around behind the scenes.
+`Builder` constructor has generic parameters `<TValue, TInstance>`.
+`TValue` - type of value, that will be passed around behind the scenes.
+`TInstance` - type of your fluent interface.
 
 ```
 type Point = { x: number, y: number };
@@ -96,7 +96,7 @@ type WrappedPoint = {
   div: (point: Point) => WrappedPoint
 }
 
-let point = builder.build<WrappedPoint, Point>()
+let point = new fib.Builder<Point, WrappedPoint>()
   .chain("add", (b) => (a) => ({ x: a.x + b.x, y: a.y + b.y }))
   .chain("sub", (b) => (a) => ({ x: a.x - b.x, y: a.y - b.y }))
   .chain("mul", (b) => (a) => ({ x: a.x * b.x, y: a.y * b.y }))
@@ -107,30 +107,22 @@ let point = builder.build<WrappedPoint, Point>()
 
 ## Notes
 
-### builder is mutable
-Basically `builder` is written with itself using `cascade` for all its functions.
+### Builder has optional parameter
+You can pass your own constructor into Builder to extend your constructor prototype.
 ```
-build.build = builder.build()
-  .cascade('cascade', ...)
-  .cascade('chain', ...)
-  .cascade('unwrap' ...)
-  .value;
-```
-This means that `cascade`, `chain` and `unwrap` update inner object. You can't split building into several directions like this.
-```
-let partiallyBuilt = builder.build()
-  .chain('foo', ...);
-let partiallyBuilt1 = partiallyBuilt()
-  .chain('foo1', ...);
-let partiallyBuilt2 = partiallyBuilt()
-  .chain('foo2');
+function Url(value) { this.value = value; }
+new fib.Builder(Url)
+  .cascade('scheme', (scheme) => (url) => { url.scheme = scheme; })
+  .cascade('address', (address) => (url) => { url.address = address; })
+  .cascade('port', (port) => (url) => { url.port = port; }
+  .unwrap('toUrl', () => (url) => { return url.scheme + '://' + url.address + ':' url.port; });
   
-let result1 = partiallyBuilt1.value;
-let result2 = partiallyBuilt2.value;
+let localhost = new Url({ scheme: null, address: null, port: null })
+  .scheme('http')
+  .address('127.0.0.1')
+  .port('80')
+  .toUrl();
 ```
-`result1` and `result2` both get `foo`, `foo1` and `foo2` functions.
-
-This behavior may change in the future though.
 
 
 ### Merge your static functions with fluent interface using object.assign
@@ -143,7 +135,7 @@ let pointHelpers = {
   div: (left, right) => ({ x: left.x / right.x, y: left.y / right.y });
 }
 
-let pointFluent = builder.build()
+let pointFluent = new fib.Builder()
   .chain("add", (right) => (left) => pointHelpers.add(left, right))
   .chain("sub", (right) => (left) => pointHelpers.sub(left, right))
   .chain("mul", (right) => (left) => pointHelpers.mul(left, right))
