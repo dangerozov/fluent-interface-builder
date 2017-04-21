@@ -1,5 +1,6 @@
 # Fluent interface builder
 Create fluent interfaces fluently.
+
 ## Installation
 `npm install fluent-interface-builder --save`
 
