@@ -1,4 +1,4 @@
-import builder = require('./index');
+import fib = require('./index');
 
 describe('Builder', () => {
     interface OptionsBuilder {
@@ -12,7 +12,7 @@ describe('Builder', () => {
         url: string
     }
 
-    let createOpts = builder.build<Options, OptionsBuilder>()
+    let createOpts = new fib.Builder<Options, OptionsBuilder>()
         .cascade('url', (value) => (opts) => { opts.url = value; })
         .chain('reset', (newOpts) => (opts) => newOpts)
         .unwrap('toString', () => (opts) => `{ url: ${opts.url} }`)
@@ -50,7 +50,7 @@ describe('Builder', () => {
         unwrap: () => number;
     }
 
-    let Calc = builder.build<number, ICalc>()
+    let Calc = new fib.Builder<number, ICalc>()
         .chain("add", (b) => (a) => a + b)
         .chain("sub", (b) => (a) => a - b)
         .value;
