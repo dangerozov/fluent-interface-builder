@@ -1,53 +1,53 @@
-export interface Instance<T> { value: T; }
-export interface Ctor<T, TI extends Instance<T>> { new (value: T): TI; }
+export interface Instance<TValue> { value: TValue; }
+export interface Ctor<TValue, TInstance extends Instance<TValue>> { new (value: TValue): TInstance; }
 
-export interface Cascadable<T> { (...args: any[]): (ctx: T) => void };
-export interface Chainable<T> { (...args: any[]): (ctx: T) => T };
-export interface Unwrappable<T, U> { (...args: any[]): (ctx: T) => U };
+export interface Cascadable<TValue> { (...args: any[]): (ctx: TValue) => void };
+export interface Chainable<TValue> { (...args: any[]): (ctx: TValue) => TValue };
+export interface Unwrappable<TValue, U> { (...args: any[]): (ctx: TValue) => U };
 
-let cascade = <T, TI extends Instance<T>>(name: string, func: Cascadable<T>) => (ctor: Ctor<T, TI>) => {
-	ctor.prototype[name] = function(this: TI, ...args: any[]) {
+let cascade = <TValue, TInstance extends Instance<TValue>>(name: string, func: Cascadable<TValue>) => (ctor: Ctor<TValue, TInstance>) => {
+	ctor.prototype[name] = function(this: TInstance, ...args: any[]) {
 		func(...args)(this.value);
 		return this;
 	};
 };
 
-let chain = <T, TI extends Instance<T>>(name: string, func: Chainable<T>) => (ctor: Ctor<T, TI>) => {
-	ctor.prototype[name] = function(this: TI, ...args: any[]) {
+let chain = <TValue, TInstance extends Instance<TValue>>(name: string, func: Chainable<TValue>) => (ctor: Ctor<TValue, TInstance>) => {
+	ctor.prototype[name] = function(this: TInstance, ...args: any[]) {
 		this.value = func(...args)(this.value);
 		return this;
 	};
 };
 
-let unwrap = <T, TI extends Instance<T>, U>(name: string, func: Unwrappable<T, U> ) => (ctor: Ctor<T, TI>) => {
-	ctor.prototype[name] = function(this: TI, ...args: any[]) {
+let unwrap = <TValue, TInstance extends Instance<TValue>, U>(name: string, func: Unwrappable<TValue, U> ) => (ctor: Ctor<TValue, TInstance>) => {
+	ctor.prototype[name] = function(this: TInstance, ...args: any[]) {
 		return func(...args)(this.value);
 	}
 };
 
-export interface IBuilder<T, TI extends Instance<T>> {
-	value: Ctor<T, TI>;
-	cascade: (name: string, func: Cascadable<T>) => IBuilder<T, TI>;
-	chain: (name: string, func: Chainable<T>) => IBuilder<T, TI>;
-	unwrap: <U>(name: string, func: Unwrappable<T, U>) => IBuilder<T, TI>;
+export interface IBuilder<TValue, TInstance extends Instance<TValue>> {
+	value: Ctor<TValue, TInstance>;
+	cascade: (name: string, func: Cascadable<TValue>) => IBuilder<TValue, TInstance>;
+	chain: (name: string, func: Chainable<TValue>) => IBuilder<TValue, TInstance>;
+	unwrap: <U>(name: string, func: Unwrappable<TValue, U>) => IBuilder<TValue, TInstance>;
 }
 
-export class Builder<T, TI extends Instance<T>> implements IBuilder<T, TI> {
-	public value: Ctor<T, TI>;
-	constructor(value?: Ctor<T, TI>) {
+export class Builder<TValue, TInstance extends Instance<TValue>> implements IBuilder<TValue, TInstance> {
+	public value: Ctor<TValue, TInstance>;
+	constructor(value?: Ctor<TValue, TInstance>) {
 		if (value === void 0) {
-			class RealCtor implements Instance<T> {
-				constructor(public value: T) { }
+			class RealCtor implements Instance<TValue> {
+				constructor(public value: TValue) { }
 			}
 
-			value = <Ctor<T, TI>>RealCtor;
+			value = <Ctor<TValue, TInstance>>RealCtor;
 		}
 
 		this.value = value;
 	}
-	cascade(name: string, func: Cascadable<T>) { return <IBuilder<T, TI>>null; };
-	chain(name: string, func: Chainable<T>) { return <IBuilder<T, TI>>null; };
-	unwrap<U>(name: string, func: Unwrappable<T, U>) { return <IBuilder<T, TI>>null };
+	cascade(name: string, func: Cascadable<TValue>) { return <IBuilder<TValue, TInstance>>null; };
+	chain(name: string, func: Chainable<TValue>) { return <IBuilder<TValue, TInstance>>null; };
+	unwrap<U>(name: string, func: Unwrappable<TValue, U>) { return <IBuilder<TValue, TInstance>>null };
 }
 
 cascade<any, Instance<any>>("cascade", cascade)(Builder);
