@@ -1,4 +1,6 @@
 # Fluent interface builder
+[![Build Status](https://travis-ci.org/dangerozov/fluent-interface-builder.svg?branch=master)](https://travis-ci.org/dangerozov/fluent-interface-builder)
+
 Create fluent interfaces fluently.
 
 ## Installation
