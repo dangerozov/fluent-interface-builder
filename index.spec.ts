@@ -13,9 +13,9 @@ describe('Builder', () => {
     }
 
     let createOpts = new fib.Builder<Options, OptionsBuilder>()
-        .cascade('url', (value) => (opts) => { opts.url = value; })
-        .chain('reset', (newOpts) => (opts) => newOpts)
-        .unwrap('toString', () => (opts) => `{ url: ${opts.url} }`)
+        .cascade('url', (value, opts) => { opts.url = value; })
+        .chain('reset', (newOpts, opts) => newOpts)
+        .unwrap('toString', (opts) => `{ url: ${opts.url} }`)
         .value;
 
     it('should cascade', () => {
@@ -51,8 +51,8 @@ describe('Builder', () => {
     }
 
     let Calc = new fib.Builder<number, ICalc>()
-        .chain("add", (b) => (a) => a + b)
-        .chain("sub", (b) => (a) => a - b)
+        .chain("add", (b, a) => a + b)
+        .chain("sub", (b, a) => a - b)
         .value;
 
     it('should calc', () => {

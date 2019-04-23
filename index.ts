@@ -1,27 +1,27 @@
 export interface Instance<TValue> { value: TValue; }
 export interface Ctor<TValue, TInstance extends Instance<TValue>> { new (value: TValue): TInstance; }
 
-export interface Cascadable<TValue> { (...args: any[]): (ctx: TValue) => void };
-export interface Chainable<TValue> { (...args: any[]): (ctx: TValue) => TValue };
-export interface Unwrappable<TValue, U> { (...args: any[]): (ctx: TValue) => U };
+export interface Cascadable<TValue> { (...args: any[]/*, ctx: TValue*/): void };
+export interface Chainable<TValue> { (...args: any[]/*, ctx: TValue*/): TValue };
+export interface Unwrappable<TValue, U> { (...args: any[]/*, ctx: TValue*/): U };
 
-let cascade = <TValue, TInstance extends Instance<TValue>>(name: string, func: Cascadable<TValue>) => (ctor: Ctor<TValue, TInstance>) => {
+let cascade = <TValue, TInstance extends Instance<TValue>>(name: string, func: Cascadable<TValue>, ctor: Ctor<TValue, TInstance>) => {
 	ctor.prototype[name] = function(this: TInstance, ...args: any[]) {
-		func(...args)(this.value);
+		func(...args, this.value);
 		return this;
 	};
 };
 
-let chain = <TValue, TInstance extends Instance<TValue>>(name: string, func: Chainable<TValue>) => (ctor: Ctor<TValue, TInstance>) => {
+let chain = <TValue, TInstance extends Instance<TValue>>(name: string, func: Chainable<TValue>, ctor: Ctor<TValue, TInstance>) => {
 	ctor.prototype[name] = function(this: TInstance, ...args: any[]) {
-		this.value = func(...args)(this.value);
+		this.value = func(...args, this.value);
 		return this;
 	};
 };
 
-let unwrap = <TValue, TInstance extends Instance<TValue>, U>(name: string, func: Unwrappable<TValue, U> ) => (ctor: Ctor<TValue, TInstance>) => {
+let unwrap = <TValue, TInstance extends Instance<TValue>, U>(name: string, func: Unwrappable<TValue, U>, ctor: Ctor<TValue, TInstance>) => {
 	ctor.prototype[name] = function(this: TInstance, ...args: any[]) {
-		return func(...args)(this.value);
+		return func(...args, this.value);
 	}
 };
 
@@ -50,6 +50,6 @@ export class Builder<TValue, TInstance extends Instance<TValue>> implements IBui
 	unwrap<U>(name: string, func: Unwrappable<TValue, U>) { return <IBuilder<TValue, TInstance>>null };
 }
 
-cascade<any, Instance<any>>("cascade", cascade)(Builder);
-cascade<any, Instance<any>>("chain", chain)(Builder);
-cascade<any, Instance<any>>("unwrap", unwrap)(Builder);
+cascade<any, Instance<any>>("cascade", cascade, Builder);
+cascade<any, Instance<any>>("chain", chain, Builder);
+cascade<any, Instance<any>>("unwrap", unwrap, Builder);
